@@ -1,24 +1,28 @@
-CC=gcc
+cflags = -Wall -Wextra -Iinclude -g
+ldeps  = -g -lncurses -lrt
 
-CFLAGS=-c -Wall -Wextra
-LDFLAGS=-lncurses -lrt
+srcs_dir = src
+objs_dir = obj
+bin_dir  = bin
 
-OBJS=main.o ncurapi.o matrix.o
-DEPS=defs.h ncurapi.h matrix.h
+srcs = $(addprefix $(srcs_dir)/,main.c matroid.c matrix.c)
+objs = $(srcs:$(srcs_dir)/%.c=$(objs_dir)/%.o)
 
-PROG_NAME=matrix
-DIR_NAME=matrix
+.PHONY: all
+all: $(bin_dir)/prog
 
-all: $(OBJS)
-	$(CC) $(LDFLAGS) -o $(PROG_NAME) $^
+$(bin_dir)/prog: $(objs) | $(bin_dir)
+	@gcc $(ldeps) -o $@ $^
 
-%.o: %.c $(DEPS)
-	$(CC) $(CFLAGS) $< -o $@
+$(objs_dir)/%.o: $(srcs_dir)/%.c | $(objs_dir)
+	@gcc $(cflags) -c $< -o $@
+
+$(objs_dir):
+	@[ -d $(objs_dir) ] || mkdir $(objs_dir)
+
+$(bin_dir):
+	@[ -d $(bin_dir) ] || mkdir $(bin_dir)
 
 .PHONY: clean
 clean:
-	rm -f $(PROG_NAME) *.o
-
-.PHONY: tar
-tar:
-	tar -cf $(DIR_NAME).tar ../$(DIR_NAME)
+	@rm -rf $(objs_dir) $(bin_dir)
